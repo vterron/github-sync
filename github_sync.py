@@ -40,7 +40,22 @@ class FileCache(collections.namedtuple('_FileCache', 'path')):
 
     """
 
-    pass
+    def up_to_date(self, max_hours = 1):
+        """ Determine whether the cache file has expired.
+
+        Return True if the cache file was last modified less than 'max_hours'
+        ago; and False otherwise. If the file does not exist, returns False
+        too. In this manner, any time that False is returned we know that we
+        cannot use the cached value.
+
+        """
+
+        try:
+            max_seconds = max_hours * 3600
+            cache_mtime = os.path.getmtime(self.path)
+            return (time.time() - cache_mtime) <= (max_seconds)
+        except OSError:
+            return False
 
 
 class GitRepository(collections.namedtuple('_GitRepository', 'path')):
