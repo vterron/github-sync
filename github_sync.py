@@ -8,12 +8,15 @@
 __author__ = "Víctor Terrón"
 __author_username__ = "vterron"
 
+import calendar
 import collections
 import contextlib
 import os
 import subprocess
 import re
+import requests
 import tempfile
+import time
 
 @contextlib.contextmanager
 def tmp_chdir(path):
@@ -93,3 +96,43 @@ class GitRepository(collections.namedtuple('_GitRepository', 'path')):
         username   = match.group('username')
         repository = match.group('repository')
         return URL.format(username, repository)
+
+    def get_last_github_commit(self, timeout=None):
+        """ Return the short SHA1 of the last commit pushed to GitHub.
+
+        Use the GitHub API to get the SHA1 hash of the last commit pushed to
+        GitHub, and then obtain its short version with `git rev-parse`. Return
+        a two-element tuple with (a) the short SHA1 and (b) date of the last
+        commit as a Unix timestamp. For example: ('51277fc', 1414061493)
+
+        The 'timeout' keyword argument defines the number of seconds after
+        which the requests.exceptions.Timeout exception is raised if the server
+        has not issued a response. Note that this is not the same as a time
+        limit on the entire response download.
+
+        """
+
+        # [From: https://developer.github.com/v3/#user-agent-required]
+        # All API requests MUST include a valid User-Agent header [..] We
+        # request that you use your GitHub username, or the name of your
+        # application, for the User-Agent header value. This allows us to
+        # contact you if there are problems.
+
+        headers = {'User-Agent': __author_username__}
+        kwargs = dict(headers=headers, timeout=timeout)
+        r = requests.get(self.API_URL, **kwargs)
+        last_commit = r.json()[0]
+        hash_ = last_commit['sha']
+        date_str = last_commit['commit']['author']['date']
+
+        # Timestamps are returned in ISO 8601 format: "YYYY-MM-DDTHH:MM:SSZ",
+        # where Z is the zone designator for the zero UTC offset (that is, the
+        # time is in UTC). Convert this string to a Unix timestamp value.
+
+        fmt = "%Y-%m-%dT%H:%M:%SZ"
+        date_struct = time.strptime(date_str, fmt)
+        date_ = calendar.timegm(date_struct)
+
+        args = ['git', 'rev-parse', '--short', hash_]
+        short_hash = self.check_output(args)
+        return short_hash, date_
