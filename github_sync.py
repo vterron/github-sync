@@ -64,6 +64,12 @@ class FileCache(collections.namedtuple('_FileCache', 'path')):
         with open(self.path, 'wt') as fd:
             json.dump(args, fd)
 
+    def get(self):
+        """ Return the contents of the JSON cache file. """
+
+        with open(self.path, 'rt') as fd:
+            return json.load(fd)
+
 
 class GitRepository(collections.namedtuple('_GitRepository', 'path')):
 
