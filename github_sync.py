@@ -11,6 +11,7 @@ __author_username__ = "vterron"
 import calendar
 import collections
 import contextlib
+import json
 import os
 import subprocess
 import re
@@ -56,6 +57,12 @@ class FileCache(collections.namedtuple('_FileCache', 'path')):
             return (time.time() - cache_mtime) <= (max_seconds)
         except OSError:
             return False
+
+    def set(self, *args):
+        """ Write the received arguments to the JSON cache file. """
+
+        with open(self.path, 'wt') as fd:
+            json.dump(args, fd)
 
 
 class GitRepository(collections.namedtuple('_GitRepository', 'path')):
