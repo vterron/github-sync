@@ -8,6 +8,7 @@ import collections
 import contextlib
 import os
 import subprocess
+import re
 import tempfile
 
 @contextlib.contextmanager
@@ -71,3 +72,20 @@ class GitRepository(collections.namedtuple('_GitRepository', 'path')):
         """ Return the URL the Git repository was originally cloned from. """
         args = ['git', 'config', '--get', 'remote.origin.url']
         return self.check_output(args)
+
+    @property
+    def API_URL(self):
+        """ Return the URL of the GitHub commits API.
+
+        The GitHub commits API allows us to list, view, and compare commits in
+        a repository. More info: https://developer.github.com/v3/repos/commits/
+
+        """
+
+        # Match HTTPS and Git clones from GitHub
+        REGEXP = "(git@|https://)github\.com(:|/)(?P<username>\w+)/(?P<repository>\w+).git"
+        URL = 'https://api.github.com/repos/{0}/{1}/commits?page=1&per_page=1'
+        match = re.match(REGEXP, self.origin)
+        username   = match.group('username')
+        repository = match.group('repository')
+        return URL.format(username, repository)
