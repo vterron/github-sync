@@ -30,6 +30,19 @@ def tmp_chdir(path):
         os.chdir(cwd)
 
 
+class FileCache(collections.namedtuple('_FileCache', 'path')):
+    """ Interface to cache data to disk.
+
+    This class allows to easily write and read data from a JSON file, via
+    its set() and get() methods. The file is opened and closed every time an
+    operation is made, so we do not need to worry about closing it when done
+    with the FileCache object.
+
+    """
+
+    pass
+
+
 class GitRepository(collections.namedtuple('_GitRepository', 'path')):
 
     def check_output(self, args):
