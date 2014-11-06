@@ -5,6 +5,8 @@
 # Email: `echo vt2rron1iaa32s | tr 132 @.e`
 # License: GNU GPLv3
 
+__author__ = "Víctor Terrón"
+
 import collections
 import contextlib
 import os
