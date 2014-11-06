@@ -39,3 +39,20 @@ class GitRepository(collections.namedtuple('_GitRepository', 'path')):
                 subprocess.check_call(args, stdout = fd)
                 fd.seek(0)
                 return fd.readline().strip()
+
+    @property
+    def revision(self):
+        """A human-readable revision number of the Git repository.
+
+        Return the output of git-describe, the Git command that returns an
+        identifier which tells us how far (number of commits) off a tag we are
+        and the hash of the current HEAD. This allows us to precisely pinpoint
+        where we are in the Git repository.
+
+        """
+
+        # --long: always output the long format even when it matches a tag
+        # --dirty: describe the working tree; append '-dirty' if necessary
+        # --tags: use any tag found in refs/tags namespace
+        args = ['git', 'describe', '--long', '--dirty', '--tags']
+        return self.check_output(args)
