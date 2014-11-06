@@ -7,6 +7,8 @@
 import collections
 import contextlib
 import os
+import subprocess
+import tempfile
 
 @contextlib.contextmanager
 def tmp_chdir(path):
@@ -21,4 +23,19 @@ def tmp_chdir(path):
 
 
 class GitRepository(collections.namedtuple('_GitRepository', 'path')):
-    pass
+
+    def check_output(self, args):
+        """ Run a command in the Git directory and return its output.
+
+        This method chdirs to the Git directory, runs a command with arguments
+        and returns its output as a string with leading and trailing characters
+        removed. If the return code is non-zero, CalledProcessError is raised.
+
+        """
+
+        # subprocess.check_output() new in 2.7; we want 2.6 compatibility
+        with tmp_chdir(self.path):
+            with tempfile.TemporaryFile() as fd:
+                subprocess.check_call(args, stdout = fd)
+                fd.seek(0)
+                return fd.readline().strip()
