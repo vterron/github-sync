@@ -4,6 +4,7 @@
 # Email: `echo vt2rron1iaa32s | tr 132 @.e`
 # License: GNU GPLv3
 
+import collections
 import contextlib
 import os
 
@@ -18,3 +19,6 @@ def tmp_chdir(path):
     finally:
         os.chdir(cwd)
 
+
+class GitRepository(collections.namedtuple('_GitRepository', 'path')):
+    pass
