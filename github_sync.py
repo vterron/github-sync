@@ -6,6 +6,7 @@
 # License: GNU GPLv3
 
 __author__ = "Víctor Terrón"
+__author_username__ = "vterron"
 
 import collections
 import contextlib
