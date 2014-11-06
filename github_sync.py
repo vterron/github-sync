@@ -65,3 +65,9 @@ class GitRepository(collections.namedtuple('_GitRepository', 'path')):
         # %at: author date, UNIX timestamp
         args = ['git', 'log', '-1', '--format=%at']
         return float(self.check_output(args))
+
+    @property
+    def origin(self):
+        """ Return the URL the Git repository was originally cloned from. """
+        args = ['git', 'config', '--get', 'remote.origin.url']
+        return self.check_output(args)
