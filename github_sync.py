@@ -56,3 +56,12 @@ class GitRepository(collections.namedtuple('_GitRepository', 'path')):
         # --tags: use any tag found in refs/tags namespace
         args = ['git', 'describe', '--long', '--dirty', '--tags']
         return self.check_output(args)
+
+    @property
+    def last_commit_date(self):
+        """ Return the author date of the last commit, as a Unix timestamp. """
+
+        # -<n>: number of commits to show
+        # %at: author date, UNIX timestamp
+        args = ['git', 'log', '-1', '--format=%at']
+        return float(self.check_output(args))
