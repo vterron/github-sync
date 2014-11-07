@@ -73,6 +73,10 @@ class FileCache(collections.namedtuple('_FileCache', 'path')):
 
 class GitRepository(collections.namedtuple('_GitRepository', 'path')):
 
+    # The JSON file where the results of the last query to the GitHub API are
+    # cached. This file is located in the directory of the Git repository.
+    CACHE_FILE_FILENAME = '.github-last-commit-cache.json'
+
     def check_output(self, args):
         """ Run a command in the Git directory and return its output.
 
