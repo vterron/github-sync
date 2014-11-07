@@ -134,6 +134,7 @@ class GitRepository(collections.namedtuple('_GitRepository', 'path')):
     @property
     def origin(self):
         """ Return the URL the Git repository was originally cloned from. """
+
         args = ['git', 'config', '--get', 'remote.origin.url']
         return self.check_output(args)
 
