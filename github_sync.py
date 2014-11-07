@@ -160,6 +160,13 @@ class GitRepository(collections.namedtuple('_GitRepository', 'path')):
         URL = 'https://api.github.com/repos/{0}/{1}/commits?page=1&per_page=1'
         return URL.format(*self._parse_origin())
 
+    @property
+    def URL(self):
+        """ Return the URL of the repository on GitHub. """
+
+        URL = "https://github.com/{0}/{1}"
+        return URL.format(*self._parse_origin())
+
     def get_last_github_commit(self, timeout=None):
         """ Return the short SHA1 of the last commit pushed to GitHub.
 
