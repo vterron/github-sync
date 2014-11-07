@@ -234,3 +234,33 @@ class GitRepository(collections.namedtuple('_GitRepository', 'path')):
 class UnmergedGitHubWarning(Warning):
     """ Warn that there are unmerged changes on GitHub. """
     pass
+
+def check(file_path, timeout=2, max_hours=1):
+    """ Issue a warning if there are unmerged changes on GitHub.
+
+    Compare the SHA1 hash of the last commit in the local Git repository where
+    'file_path' is located with that last pushed to GitHub. If they differ
+    *and* the GitHub commit is more recent, issue an UnmergedGitHubWarning
+    warning to alert the user that there is a newer version available. Do
+    nothing if we are up to date.
+
+    The 'timeout' and 'max_hours' parameters are passed to
+    GitRepository.get_last_github_commit().
+
+    """
+
+    path = os.path.abspath(file_path)
+    dir_ = os.path.dirname(path)
+    git = GitRepository(dir_)
+
+    current_revision = git.revision
+    kwargs = dict(timeout = timeout, max_hours = max_hours)
+    github_hash, last_github_date = git.get_last_github_commit(**kwargs)
+    if github_hash not in current_revision:
+        last_commit_date = git.last_commit_date
+        if last_commit_date < last_github_date:
+            msg = ("Your current revision is '{0}' ({1}), but there is "
+                   "a more recent version ({2}, {3}) available at {4}")
+            args = (current_revision, time.ctime(last_commit_date),
+                    github_hash, time.ctime(last_github_date), git.URL)
+            warnings.warn(msg.format(*args))
