@@ -108,12 +108,18 @@ class GitRepository(collections.namedtuple('_GitRepository', 'path')):
         and the hash of the current HEAD. This allows us to precisely pinpoint
         where we are in the Git repository.
 
+        At least one tag in the commit history is needed for git-describe to
+        tell us, well, the latest tag, but with the --always option we will
+        fall back to an abbreviated hash if it cannot find any suitable tags.
+
         """
 
         # --long: always output the long format even when it matches a tag
         # --dirty: describe the working tree; append '-dirty' if necessary
         # --tags: use any tag found in refs/tags namespace
-        args = ['git', 'describe', '--long', '--dirty', '--tags']
+        # --always: show uniquely abbreviated commit object as fallback
+
+        args = ['git', 'describe', '--long', '--dirty', '--tags', '--always']
         return self.check_output(args)
 
     @property
