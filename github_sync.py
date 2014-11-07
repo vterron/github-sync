@@ -18,6 +18,7 @@ import re
 import requests
 import tempfile
 import time
+import warnings
 
 @contextlib.contextmanager
 def tmp_chdir(path):
@@ -229,3 +230,7 @@ class GitRepository(collections.namedtuple('_GitRepository', 'path')):
         t = short_hash, date_
         cache.set(*t)
         return t
+
+class UnmergedGitHubWarning(Warning):
+    """ Warn that there are unmerged changes on GitHub. """
+    pass
