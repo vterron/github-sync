@@ -94,6 +94,12 @@ class GitRepository(collections.namedtuple('_GitRepository', 'path')):
                 return fd.readline().strip()
 
     @property
+    def cache_path(self):
+        """ The path to the on-disk JSON cache. """
+
+        return os.path.join(self.path, self.CACHE_FILE_FILENAME)
+
+    @property
     def revision(self):
         """A human-readable revision number of the Git repository.
 
