@@ -131,6 +131,23 @@ class GitRepository(collections.namedtuple('_GitRepository', 'path')):
         args = ['git', 'config', '--get', 'remote.origin.url']
         return self.check_output(args)
 
+    def _parse_origin(self):
+        """ Return the GitHub username and repository.
+
+        Parse the URL the Git repository was cloned from and extract both the
+        username and repository, returning them as a two-element tuple. For
+        example, given the URL 'https://github.com/kennethreitz/requests.git',
+        the tuple ('kennethreitz', 'requests') would be returned.
+
+        """
+
+        # Match HTTPS and Git clones from GitHub
+        REGEXP = "(git@|https://)github\.com(:|/)(?P<username>\w+)/(?P<repository>\w+).git"
+        match = re.match(REGEXP, self.origin)
+        username   = match.group('username')
+        repository = match.group('repository')
+        return username, repository
+
     @property
     def API_URL(self):
         """ Return the URL of the GitHub commits API.
@@ -140,13 +157,8 @@ class GitRepository(collections.namedtuple('_GitRepository', 'path')):
 
         """
 
-        # Match HTTPS and Git clones from GitHub
-        REGEXP = "(git@|https://)github\.com(:|/)(?P<username>\w+)/(?P<repository>\w+).git"
         URL = 'https://api.github.com/repos/{0}/{1}/commits?page=1&per_page=1'
-        match = re.match(REGEXP, self.origin)
-        username   = match.group('username')
-        repository = match.group('repository')
-        return URL.format(username, repository)
+        return URL.format(*self._parse_origin())
 
     def get_last_github_commit(self, timeout=None):
         """ Return the short SHA1 of the last commit pushed to GitHub.
