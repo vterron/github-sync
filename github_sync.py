@@ -173,7 +173,7 @@ class GitRepository(collections.namedtuple('_GitRepository', 'path')):
         URL = "https://github.com/{0}/{1}"
         return URL.format(*self._parse_origin())
 
-    def get_last_github_commit(self, timeout=None):
+    def get_last_github_commit(self, timeout=None, max_hours=1):
         """ Return the short SHA1 of the last commit pushed to GitHub.
 
         Use the GitHub API to get the SHA1 hash of the last commit pushed to
@@ -181,12 +181,26 @@ class GitRepository(collections.namedtuple('_GitRepository', 'path')):
         a two-element tuple with (a) the short SHA1 and (b) date of the last
         commit as a Unix timestamp. For example: ('51277fc', 1414061493)
 
+        The method uses a JSON file, in the directory of the Git repository, to
+        temporarily cache the values returned by the GitHub API. If the cache
+        file was last modified less than 'max_hours' hours ago, the contents of
+        the JSON file are returned. Otherwise, the GitHub API is queried and
+        the result file-cached before the method returns. This is necessary as
+        it would be impolite (and also rather inefficient) to make too many
+        queries to the GitHub API. Anyway, even if we did not care about that,
+        the rate limit for unauthenticated requests would only allow us to make
+        up to sixty requests per hour.
+
         The 'timeout' keyword argument defines the number of seconds after
         which the requests.exceptions.Timeout exception is raised if the server
         has not issued a response. Note that this is not the same as a time
         limit on the entire response download.
 
         """
+
+        cache = FileCache(self.cache_path)
+        if cache.up_to_date(max_hours = max_hours):
+            return cache.get()
 
         # [From: https://developer.github.com/v3/#user-agent-required]
         # All API requests MUST include a valid User-Agent header [..] We
@@ -211,4 +225,6 @@ class GitRepository(collections.namedtuple('_GitRepository', 'path')):
 
         args = ['git', 'rev-parse', '--short', hash_]
         short_hash = self.check_output(args)
-        return short_hash, date_
+        t = short_hash, date_
+        cache.set(*t)
+        return t
